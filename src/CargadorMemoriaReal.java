@@ -14,7 +14,7 @@ public class CargadorMemoriaReal extends Thread {
     private static HashMap<Integer, Integer> tablaPaginas;
     private ArrayList<Integer> marcosLibres;
 
-    public CargadorMemoriaReal(int pMarcosPagina, String pArchivo, HashMap<Integer, Integer> tabla) {
+    public CargadorMemoriaReal(int pMarcosPagina, String pArchivo) {
         this.marcosPagina = pMarcosPagina;
         this.archivo = pArchivo;
         this.referencias = new ArrayList<>();
@@ -23,7 +23,8 @@ public class CargadorMemoriaReal extends Thread {
         for (int i=0; i<marcosPagina; i++) {
             marcosLibres.add((Integer) i);
         }
-        tablaPaginas = tabla;
+        tablaPaginas = new HashMap<>();
+        
         try {
             leerArchivo();
         } catch (IOException e) {

@@ -1,6 +1,7 @@
 import java.io.FileWriter;
 import java.io.IOException;
 
+
 public class Generador {
     // Esta clase genera el archivo con los cálculos de cada posición en memoria virtual
     private int tamanioPagina;
@@ -28,6 +29,9 @@ public class Generador {
 
         // Numero de Páginas = (# total de elementos * tamaño de 1 entero) / tamaño de 1 página
         int numeroPaginas = 4*(filasA*columnasFilasAB + columnasFilasAB*columnasB + filasA*columnasB) / tamanioPagina;
+        if (4*(filasA*columnasFilasAB + columnasFilasAB*columnasB + filasA*columnasB) % tamanioPagina != 0){
+            numeroPaginas++;
+        }
         encabezado += "\nNP=" + Integer.toString(numeroPaginas);
 
         return encabezado;

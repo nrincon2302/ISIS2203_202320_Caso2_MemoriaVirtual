@@ -1,8 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
@@ -47,8 +45,7 @@ public class Main {
                 } else if (opcion == 2) {
                     int marcosPag = Integer.parseInt(input("Ingrese el número de marcos de página"));
                     String nombreArchivo = input("Ingrese el nombre del archivo de referencias");
-                    HashMap<Integer, Integer> tablaPaginas = new HashMap<>();
-                    CargadorMemoriaReal cargador = new CargadorMemoriaReal(marcosPag, nombreArchivo, tablaPaginas);
+                    CargadorMemoriaReal cargador = new CargadorMemoriaReal(marcosPag, nombreArchivo);
                     cargador.start();
                 } else if (opcion == 3) {
                     continuar = false;
