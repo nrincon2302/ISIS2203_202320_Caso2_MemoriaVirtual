@@ -49,10 +49,14 @@ public class Main {
                     String nombreArchivo = input("Ingrese el nombre del archivo de referencias");
                     try {
                         CyclicBarrier barrier = new CyclicBarrier(3);
+                        
                         RAM ram = new RAM(marcosPag);
-                        Reloj envejecimiento = new Reloj(ram, barrier);
+                        
+                        Reloj reloj = new Reloj(ram, barrier);
+                        
                         Proceso proceso = new Proceso(new BufferedReader(new FileReader(nombreArchivo)), ram, barrier);
-                        envejecimiento.start();
+                        
+                        reloj.start();
                         proceso.start();
                         
                         barrier.await();
@@ -60,6 +64,7 @@ public class Main {
                     
                     }
                     catch (Exception e){
+                        e.printStackTrace();
                         System.out.println("\nNo se encontró el archivo");
                     }
 

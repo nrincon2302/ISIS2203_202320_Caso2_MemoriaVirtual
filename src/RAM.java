@@ -1,93 +1,84 @@
-import java.util.HashMap;
-import java.util.Stack;
+public class RAM{
 
-public class RAM {
-    
-    private HashMap<Integer,Integer> tablaPaginas;
-    private int[] tablaPaginasInv;
-    private Stack<Integer> registrosVacios = new Stack<>();
-    private int[] registrosRam;
-    private int[] registrosRecientementeLeidos;
-
-    int numFallosPagina = 0;
+    int[] tablaPaginas;
+    int[] tablaPaginasInv;
+    int[] contadorMarcosPaginas;
+    int[] marcosPaginaReferenciados;
+    int fallosPagina = 0;
     boolean continuar = true;
 
-    public RAM(int numMarcosPagina){
-        registrosRam = new int[numMarcosPagina];
-        registrosRecientementeLeidos = new int[numMarcosPagina];
-        tablaPaginasInv = new int[numMarcosPagina];
-
-        for (int i = 0; i<numMarcosPagina; i++){
-            registrosRam[i] = 0b00000000000000000000000000000000;
-            registrosRecientementeLeidos[i] = 0;
-            registrosVacios.push(i);
-            tablaPaginasInv[i]=-1;
-        }
-    }
-
-    public synchronized void setTablaPaginas(HashMap<Integer,Integer> tablaPaginas){
-        this.tablaPaginas = tablaPaginas;
-    }
-
-    public synchronized void getPagina(int paginaVirtual){
-        int paginaVirtual2PaginaReal = tablaPaginas.get(paginaVirtual);
+    public RAM(int numMarcosPaginas){
+        tablaPaginasInv = new int[numMarcosPaginas];
+        contadorMarcosPaginas = new int[numMarcosPaginas];
+        marcosPaginaReferenciados = new int[numMarcosPaginas];
         
-        if (paginaVirtual2PaginaReal == -1){
-            numFallosPagina++;  
-
-            int paginaReemplazoReal;
-            if(!registrosVacios.isEmpty()){
-                paginaReemplazoReal = registrosVacios.pop();
-            }
-            else{
-                paginaReemplazoReal = getMasViejo();
-            }
-
-            if (tablaPaginasInv[paginaReemplazoReal] != -1){
-                tablaPaginas.put(tablaPaginasInv[paginaReemplazoReal],-1);
-            }
-            tablaPaginas.put(paginaVirtual,paginaReemplazoReal);
-            tablaPaginasInv[paginaReemplazoReal] = paginaVirtual;
-
-            registrosRecientementeLeidos[paginaReemplazoReal] = 1;
+        for(int i=0; i<numMarcosPaginas; i++){
+            tablaPaginasInv[i]=-1;
+            contadorMarcosPaginas[i]=0;
+            marcosPaginaReferenciados[i]=0;
         }
+    }
+
+    public synchronized void setTablaPaginas(int numPaginasVirtuales) {
+        tablaPaginas = new int[numPaginasVirtuales];
+        for(int i=0; i<numPaginasVirtuales; i++){
+            tablaPaginas[i] = -1;
+        }
+    }
+
+    public synchronized void getPagina(int numPaginaVirtual) {
+        int direccionMarcoPagina = tablaPaginas[numPaginaVirtual];
+
+        //El marcoDePagina no está en la RAM
+        if(direccionMarcoPagina == -1){
+            fallosPagina ++;
+            int marcoMenosUsado = getMarcoMenosUsado();
+            tablaPaginas[numPaginaVirtual] = marcoMenosUsado;
+            
+            int paginaVirtualBorrada = tablaPaginasInv[marcoMenosUsado];
+            if(paginaVirtualBorrada != -1){
+                tablaPaginas[paginaVirtualBorrada] = -1;
+            }
+            tablaPaginasInv[marcoMenosUsado] = numPaginaVirtual;  
+            
+            contadorMarcosPaginas[marcoMenosUsado] = 0b01000000000000000000000000000000;   
+        }
+        //El marcoDePagina está en la RAM
         else{
-            registrosRecientementeLeidos[paginaVirtual2PaginaReal] = 1;
-        }
+            marcosPaginaReferenciados[direccionMarcoPagina] = 1;
+        }      
     }
 
-    private int getMasViejo(){
-        int minVal = registrosRam[0];
-        int indexMinVal = 0;
-        for(int i = 0; i<registrosRam.length; i++){
-            if(registrosRam[i]<=minVal){
-                minVal=registrosRam[i];
-                indexMinVal = i;
+    private int getMarcoMenosUsado() {
+        int indexMenosUsado = 0;
+        int valMenosUsado = contadorMarcosPaginas[0];
+        for (int i=1; i<contadorMarcosPaginas.length; i++){
+            if(contadorMarcosPaginas[i]<valMenosUsado){
+                valMenosUsado = contadorMarcosPaginas[i];
+                indexMenosUsado=i;
             }
         }
-        return indexMinVal;
+        return indexMenosUsado;
     }
 
-    public synchronized boolean continuar(){
+    public synchronized int getNumFallosPagina() {
+        return fallosPagina;
+    }
+
+    public synchronized boolean continuar() {
         return continuar;
     }
-
-    public synchronized void notContinuar(){
+    public synchronized void terminar(){
         continuar = false;
     }
 
-    public synchronized void envejecer(){
-        for(int i = 0; i<registrosRecientementeLeidos.length; i++){
-            registrosRam[i] = registrosRam[i] >> 1; 
-            if(registrosRecientementeLeidos[i] == 1){
-                registrosRam[i] = registrosRam[i] | 0b01000000000000000000000000000000;
+    public synchronized void envejecer() {
+        for (int i=0; i<marcosPaginaReferenciados.length; i++){
+            contadorMarcosPaginas[i] >>=1;
+            if(marcosPaginaReferenciados[i] == 1){
+                contadorMarcosPaginas[i] = contadorMarcosPaginas[i] | 0b01000000000000000000000000000000;
             }
-            registrosRam[i] = 0;
+            marcosPaginaReferenciados[i] = 0;   
         }
     }
-
-    public synchronized int getNumFallosPagina(){
-        return numFallosPagina;
-    }
-
 }

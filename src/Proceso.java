@@ -1,55 +1,53 @@
 import java.io.BufferedReader;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-public class Proceso extends Thread {
-    private BufferedReader archivo;
-    CyclicBarrier barrier;
-    private RAM ram;
-    private ArrayList<Integer> secuenciaPaginas = new ArrayList<>();
+public class Proceso extends Thread{
+    int[] listaPaginas; 
+
+    RAM ram; 
     
+    CyclicBarrier barrier;
 
-    public Proceso( BufferedReader pArchivo, RAM ram, CyclicBarrier barrier) {
-        this.barrier = barrier;
-        this.archivo = pArchivo;
+
+    public Proceso(BufferedReader archivo, RAM ram, CyclicBarrier barrier) throws IOException{
         this.ram = ram;
-        HashMap<Integer,Integer> tablaPaginas = new HashMap<Integer,Integer>();
-        
-        try{
-            String line = archivo.readLine();
-            for(int i = 0; i<6; i++){
-                line = archivo.readLine();
-            }
-            while(line != null){
-                int numPagina = Integer.parseInt(line.split(", ")[1]); 
-                tablaPaginas.put(numPagina,-1);
-                secuenciaPaginas.add(numPagina);
-                line = archivo.readLine();
-            }
+        this.barrier = barrier;
 
-            ram.setTablaPaginas(tablaPaginas);
-        }
-        catch(Exception e){
-            e.printStackTrace();
+        String line = archivo.readLine();
+        line = archivo.readLine();
+        line = archivo.readLine();
+        line = archivo.readLine();
+
+        line = archivo.readLine();
+        int numReferencias = Integer.parseInt(line.split("=")[1]);
+        listaPaginas = new int[numReferencias];
+
+        line = archivo.readLine();
+        int numPaginasVirtuales = Integer.parseInt(line.split("=")[1]);
+        ram.setTablaPaginas(numPaginasVirtuales);
+
+        for(int i = 0; i<numReferencias; i++){
+            line = archivo.readLine();
+            listaPaginas[i] = Integer.parseInt(line.split(", ")[1]);
         }
     }
-
+    
     @Override
-    public void run() {
-        try{
-            for(Integer paginaVirtual : secuenciaPaginas){
-                    ram.getPagina(paginaVirtual);
-                    Thread.sleep(2);
+    public void run(){
+        try {
+            for(int i=0; i<listaPaginas.length; i++){
+                ram.getPagina(listaPaginas[i]);        
+                Thread.sleep(2);
             }
-            ram.notContinuar();
+            ram.terminar(); 
             barrier.await();
         }
-        catch(InterruptedException | BrokenBarrierException e) {
-            e.printStackTrace();
-        }
+        catch (InterruptedException | BrokenBarrierException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
     }
-
 
 }
