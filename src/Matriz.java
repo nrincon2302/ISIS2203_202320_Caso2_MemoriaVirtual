@@ -30,4 +30,9 @@ public class Matriz {
     public String darPaginaYDesplazamiento(int i, int j) {
         return M[i][j];
     }
+
+    public static void resetValues() {
+        desplazamiento = 0;
+        numPaginaActual = 0;
+    }
 }

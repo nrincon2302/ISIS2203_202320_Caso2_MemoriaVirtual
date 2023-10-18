@@ -39,6 +39,7 @@ public class Generador {
 
     public String generarReferencias() {
         // Crear las matrices
+        Matriz.resetValues();
         Matriz A = new Matriz(filasA, columnasFilasAB, tamanioPagina);
         Matriz B = new Matriz(columnasFilasAB, columnasB, tamanioPagina);
         Matriz C = new Matriz(filasA, columnasB, tamanioPagina);
