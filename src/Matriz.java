@@ -3,6 +3,7 @@ public class Matriz {
     private int columnas;
     private String[][] M;
     private static int tamanioPagina;
+    private static int desplazamiento = 0;
     private static int numPaginaActual = 0;
 
     public Matriz(int pFilas, int pColumnas, int tamPagina) {
@@ -14,8 +15,6 @@ public class Matriz {
     }
 
     public void llenarMatriz() {
-        int desplazamiento = 0;
-
         for (int i=0; i<filas; i++) {
             for (int j=0; j<columnas; j++) {
                 M[i][j] = Integer.toString(numPaginaActual) + ", " + Integer.toString(desplazamiento);
