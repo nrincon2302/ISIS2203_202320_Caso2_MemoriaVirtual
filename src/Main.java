@@ -45,8 +45,11 @@ public class Main {
                 } else if (opcion == 2) {
                     int marcosPag = Integer.parseInt(input("Ingrese el número de marcos de página"));
                     String nombreArchivo = input("Ingrese el nombre del archivo de referencias");
-                    CargadorMemoriaReal cargador = new CargadorMemoriaReal(marcosPag, nombreArchivo);
+                    Pagina pag = new Pagina(0);
+                    CargadorMemoriaReal cargador = new CargadorMemoriaReal(marcosPag, nombreArchivo, pag);
+                    SobreescritorMemoriaReal sobreescritor = new SobreescritorMemoriaReal(pag, cargador.darTP());
                     cargador.start();
+                    sobreescritor.start();
                 } else if (opcion == 3) {
                     continuar = false;
                 } else {

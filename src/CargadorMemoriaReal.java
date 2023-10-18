@@ -1,3 +1,4 @@
+import javax.sound.midi.SysexMessage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -11,25 +12,36 @@ public class CargadorMemoriaReal extends Thread {
     private String archivo;
     private ArrayList<String> referencias;
     private ArrayList<Integer[]> posicionesDesplazamientos;
-    private static HashMap<Integer, Integer> tablaPaginas;
+    private static HashMap<Integer, Pagina> tablaPaginas;
+    private static Pagina paginaActual;
     private ArrayList<Integer> marcosLibres;
+    private int fallosPagina;
 
-    public CargadorMemoriaReal(int pMarcosPagina, String pArchivo) {
+    public CargadorMemoriaReal(int pMarcosPagina, String pArchivo, Pagina pagina) {
         this.marcosPagina = pMarcosPagina;
         this.archivo = pArchivo;
         this.referencias = new ArrayList<>();
         this.posicionesDesplazamientos = new ArrayList<>();
         this.marcosLibres = new ArrayList<>();
+        this.fallosPagina = 0;
         for (int i=0; i<marcosPagina; i++) {
             marcosLibres.add((Integer) i);
         }
         tablaPaginas = new HashMap<>();
-        
+        paginaActual = pagina;
         try {
             leerArchivo();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public HashMap<Integer, Pagina> darTP() {
+        return tablaPaginas;
+    }
+
+    public int darFallosPagina() {
+        return fallosPagina;
     }
 
     public void leerArchivo() throws IOException {
@@ -59,11 +71,11 @@ public class CargadorMemoriaReal extends Thread {
         }
     }
 
-    public boolean cargarPagina(int paginaVirtual) {
+    public boolean cargarPagina(Pagina paginaVirtual) {
         Integer marcoReal = -1;
 
         if (tablaPaginas.containsValue(paginaVirtual)) {
-            for (Map.Entry<Integer, Integer> entrada : tablaPaginas.entrySet()) {
+            for (Map.Entry<Integer, Pagina> entrada : tablaPaginas.entrySet()) {
                 if (entrada.getValue() == paginaVirtual) {
                     marcoReal = entrada.getKey();
                 }
@@ -76,32 +88,49 @@ public class CargadorMemoriaReal extends Thread {
         else {
             return false;
         }
-
     }
 
-    @Override
-    public void run() {
-        for (Integer[] posDesp : posicionesDesplazamientos) {
-            if (!cargarPagina(posDesp[0])) {
-                if (!marcosLibres.isEmpty()) {
-                    System.out.println("\nFALLO DE PÁGINA");
-                    int marcoReal = marcosLibres.remove(0);
-                    tablaPaginas.put(marcoReal, posDesp[0]);
-                    System.out.println("La Página Virtual " + posDesp[0] + " ha sido cargada en" +
-                            " el Marco de Página Real " + marcoReal);
-                }
-                else {
-                    System.out.println("\nAcá viene el Algoritmo de Envejecimiento");
-                    System.out.println("No se ha cargado la Página Virtual " + posDesp[0]);
-                }
-            }
-
+    public void esperarSobreescritura() {
+        synchronized (this) {
             try {
-                Thread.sleep(2);
+                wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Override
+    public void run() {
+        try {
+            Thread.sleep(2);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Integer[] posDesp : posicionesDesplazamientos) {
+            if (!cargarPagina(new Pagina(posDesp[0]))) {
+                paginaActual = new Pagina(posDesp[0]);
+                if (!marcosLibres.isEmpty()) {
+                    fallosPagina ++;
+                    System.out.println("\nFALLO DE PÁGINA");
+                    int marcoReal = marcosLibres.remove(0);
+                    tablaPaginas.put(marcoReal, new Pagina(posDesp[0]));
+                    System.out.println("La Página Virtual " + posDesp[0] + " ha sido cargada en" +
+                            " el Marco de Página Real " + marcoReal);
+                }
+                else {
+                    fallosPagina ++;
+                    System.out.println("\nFALLO DE PÁGINA: Memoria Llena. Se ha sobreescrito.");
+                    synchronized (this) {
+                        this.notify();
+                    }
+                    esperarSobreescritura();
+                }
+            }
+        }
+
+        System.out.println("Se han generado " + darFallosPagina() + " fallos de página.");
     }
 
 
