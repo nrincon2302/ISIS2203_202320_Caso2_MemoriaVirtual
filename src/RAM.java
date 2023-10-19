@@ -41,9 +41,9 @@ public class RAM{
             }
             tablaPaginasInv[marcoMenosUsado] = numPaginaVirtual;  
             
-            contadorMarcosPaginas[marcoMenosUsado] = 0b01000000000000000000000000000000;   
+            contadorMarcosPaginas[marcoMenosUsado] = 0b01000000000000000000000000000000; 
         }
-        //El marcoDePagina está en la RAM
+        //El marcoDePagina está en la RAM2
         else{
             marcosPaginaReferenciados[direccionMarcoPagina] = 1;
         }      

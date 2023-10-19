@@ -45,9 +45,7 @@ public class Proceso extends Thread{
             barrier.await();
         }
         catch (InterruptedException | BrokenBarrierException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
     }
-
 }
