@@ -45,8 +45,11 @@ public class Main {
                     g.escribirArchivo();
                     System.out.println("Se ha generado el archivo 'docs/referenciasModo1.txt'\n");
                 } else if (opcion == 2) {
+                    System.out.println("\nHa seleccionado el Modo 2: Calcular la cantidad de fallos de página");
+                    System.out.println("NOTA: Debe haber corrido el Modo 1 antes o de lo contrario, debe existir un archivo de referencias previamente creado.");
                     int marcosPag = Integer.parseInt(input("Ingrese el número de marcos de página"));
                     String nombreArchivo = input("Ingrese el nombre del archivo de referencias");
+                    System.out.println("\nCalculando los fallos de página...\n");
                     try {
                         CyclicBarrier barrier = new CyclicBarrier(3);
                         
@@ -60,7 +63,7 @@ public class Main {
                         proceso.start();
                         
                         barrier.await();
-                        System.out.println(ram.getNumFallosPagina());
+                        System.out.println("Han ocurrido " + ram.getNumFallosPagina() + " fallos de página.");
                     
                     }
                     catch (Exception e){
